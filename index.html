@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>VK API</title>
+	<style>
+		ul {
+			list-style: none;
+		}
+		li {
+			margin-bottom: 15px;
+		}
+		a {
+			text-decoration: none;
+			color: #000;
+			display: flex;
+			align-items: center;
+		}
+		h4 {
+			margin: 0;
+		}
+		img {
+			-webkit-border-radius: 50%;
+			-moz-border-radius: 50%;
+			border-radius: 50%;
+			width: 100px;
+			height: 100px;
+			margin-right: 20px;
+		}
+	</style>
+</head>
+<body>
+
+	<button id="load">Показать друзей</button>
+
+	<ul></ul>
+
+	<script src="node_modules/jquery/dist/jquery.min.js"></script>
+	<script>
+
+		$('#load').on('click', loadFriends);
+
+		function getUrl(method, params) {
+			if (!method) throw new Error('Вы не указали метод!');
+			params = params || {};
+			params['access_token'] = '9e4369b31733dbf50540d1cd5e3014a2d889d0cfe38c40462d85d94d80abd894bf0f766c4c86e5ef574e8';
+			return 'https://api.vk.com/method/' + method + '?' + $.param(params);
+		}
+
+		function sendRequest(method, params, func) {
+			$.ajax({
+				url: getUrl(method, params),
+				method: 'GET',
+				dataType: 'JSONP',
+				success: func
+			});
+		}
+		
+		function loadFriends() {
+			sendRequest('friends.search', {count: 5, fields: 'photo_100,online'}, function (data) {
+				drawFriends(data.response);
+			});
+		}
+
+		function drawFriends(friends) {
+			var html = '';
+
+			for (var i = 1; i < friends.length; i++) {
+			 	 var f = friends[i];
+			 	 var online = f.online ? 'Online' : 'Offline';
+
+			 	 html +=
+				   	'<li>'+
+						'<a target="_blank" href="https://vk.com/id'+ f.uid +'">'+
+							'<img src="'+ f.photo_100 +'" />'+
+					  		'<div>'+
+								'<h4>'+ f.first_name + ' ' + f.last_name + '</h4>'+
+					  			'<p>'+ online +'</p>'+
+					  			'<button>Написать</button>'
+			  				+'</div>'
+						+'</a>'
+					+'</li>';
+			}
+
+			$('ul').html(html);
+		}
+
+	</script>
+</body>
+</html>
